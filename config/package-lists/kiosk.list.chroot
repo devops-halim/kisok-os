@@ -1,0 +1,37 @@
+# Packages installed into the kiosk OS image.
+
+# X server + minimal window manager (no desktop environment)
+xserver-xorg
+xserver-xorg-legacy
+xserver-xorg-video-all
+xserver-xorg-input-all
+xinit
+openbox
+
+# The browser
+chromium
+
+# Audio: PipeWire stack for speaker + microphone
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+alsa-utils
+
+# Quality-of-life
+unclutter
+fonts-liberation
+fonts-noto-color-emoji
+ca-certificates
+
+# Networking (so YouTube can reach the internet)
+network-manager
+
+# Firmware for common wifi/audio/gpu hardware
+firmware-linux
+firmware-misc-nonfree
+firmware-iwlwifi
+firmware-realtek
+
+# Base utilities
+sudo

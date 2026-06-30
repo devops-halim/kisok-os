@@ -1,0 +1,16 @@
+#!/bin/sh
+# live-build configuration for kisok-os.
+# This script is run by `lb config` and defines how the bootable ISO is built.
+set -e
+
+lb config noauto \
+	--distribution bookworm \
+	--architecture amd64 \
+	--archive-areas "main contrib non-free non-free-firmware" \
+	--binary-images iso-hybrid \
+	--debian-installer none \
+	--iso-application "kisok-os" \
+	--iso-volume "kisok-os" \
+	--memtest none \
+	--bootappend-live "boot=live components quiet splash hostname=kisok-os" \
+	"${@}"

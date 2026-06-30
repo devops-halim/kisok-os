@@ -1,0 +1,19 @@
+{
+	"AudioCaptureAllowed": true,
+	"VideoCaptureAllowed": true,
+	"AudioCaptureAllowedUrls": [
+		"https://www.youtube.com",
+		"https://youtube.com"
+	],
+	"VideoCaptureAllowedUrls": [
+		"https://www.youtube.com",
+		"https://youtube.com"
+	],
+	"DefaultGeolocationSetting": 2,
+	"PasswordManagerEnabled": false,
+	"MetricsReportingEnabled": false,
+	"BackgroundModeEnabled": false,
+	"DefaultBrowserSettingEnabled": false,
+	"TranslateEnabled": false,
+	"BookmarkBarEnabled": false
+}

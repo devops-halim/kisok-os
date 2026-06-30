@@ -1,0 +1,125 @@
+# kisok-os
+
+A tiny, single-purpose **kiosk operating system** for x86/x86_64 PCs.
+
+When you boot it, the machine:
+
+1. Boots a minimal Debian Linux (no desktop, no login screen).
+2. Auto-logs in and starts a bare X session.
+3. Launches **Chromium fullscreen in kiosk mode** straight to **youtube.com**.
+4. Has **speaker and microphone working out of the box** (PipeWire), with
+   media permissions auto-granted for YouTube — so voice search and any
+   mic/camera features just work without a permission popup.
+
+It's distributed as a bootable `.iso` you flash to a USB stick. The live image
+is read-only, so a reboot always returns to a clean kiosk — ideal for public
+displays, reception desks, info points, etc.
+
+---
+
+## What's in the box
+
+| Piece            | Choice                                              |
+|------------------|-----------------------------------------------------|
+| Base OS          | Debian 12 (bookworm), amd64                          |
+| Browser          | Chromium in `--kiosk` mode                           |
+| Window manager   | Openbox (minimal, just to host the browser window)  |
+| Audio            | PipeWire + WirePlumber (speaker **and** microphone) |
+| Auto-login user  | `kiosk` (passwordless)                              |
+| Build system     | [Debian live-build](https://wiki.debian.org/DebianLive) |
+
+---
+
+## Build the ISO
+
+### Option A — in GitHub Actions (no local setup)
+
+This repo includes `.github/workflows/build-iso.yml`. On every push (or via
+**Actions → Build kisok-os ISO → Run workflow**) it builds the image and
+uploads `kisok-os-amd64` as a downloadable artifact.
+
+### Option B — locally on a Debian/Ubuntu host
+
+```bash
+sudo apt-get update && sudo apt-get install -y live-build
+sudo ./build.sh
+```
+
+The build downloads packages and assembles the image (takes several minutes and
+a few GB of disk). The result is:
+
+```
+kisok-os-amd64.hybrid.iso
+```
+
+To start over from scratch: `sudo ./clean.sh`.
+
+---
+
+## Flash it to a USB stick
+
+> ⚠️ This erases the target device. Double-check `/dev/sdX`.
+
+```bash
+sudo dd if=kisok-os-amd64.hybrid.iso of=/dev/sdX bs=4M status=progress oflag=sync
+```
+
+(Or use [balenaEtcher](https://etcher.balena.io/) / Rufus on other machines.)
+
+Then boot the target PC from that USB stick (enable USB boot / disable Secure
+Boot in BIOS if needed).
+
+---
+
+## Try it without hardware (QEMU)
+
+```bash
+qemu-system-x86_64 -m 2048 -enable-kvm \
+  -cdrom kisok-os-amd64.hybrid.iso \
+  -audiodev pa,id=snd0 -device intel-hda -device hda-duplex,audiodev=snd0
+```
+
+---
+
+## Customizing
+
+- **Change the opening page:** edit `config/includes.chroot/etc/kiosk/kiosk.conf`
+  and set `KIOSK_URL`. (On an already-built USB you can edit `/etc/kiosk/kiosk.conf`
+  if you make the partition writable, or just rebuild.)
+- **Browser flags / behaviour:** `config/includes.chroot/opt/kiosk/start-kiosk.sh`.
+- **Permissions policy** (mic/camera/etc.):
+  `config/includes.chroot/etc/chromium/policies/managed/kiosk-policy.json`.
+- **Installed packages:** `config/package-lists/kiosk.list.chroot`.
+- **Lock the kiosk to YouTube only:** add a `URLAllowlist` to the Chromium
+  policy file. It's intentionally left open by default so YouTube's CDNs and
+  sign-in work without fiddling.
+
+---
+
+## How the auto-start chain works
+
+```
+systemd (multi-user.target)
+  └─ getty@tty1  ──autologin──▶  user "kiosk"
+        └─ ~/.bash_profile  ──▶  startx
+              └─ ~/.xinitrc  ──▶  /opt/kiosk/start-kiosk.sh
+                    ├─ openbox (window manager)
+                    ├─ pipewire / pipewire-pulse / wireplumber (audio)
+                    └─ chromium --kiosk  https://www.youtube.com
+```
+
+If Chromium ever crashes or is closed, the loop in `start-kiosk.sh` relaunches
+it automatically.
+
+---
+
+## Notes & troubleshooting
+
+- **No sound / no mic:** confirm the device isn't muted in firmware, and that
+  `firmware-*` packages cover your audio chip. `start-kiosk.sh` unmutes and
+  raises the default Master/Capture levels on boot.
+- **Black screen:** usually a GPU driver/firmware gap — the image installs
+  `xserver-xorg-video-all` and common non-free firmware, but very new GPUs may
+  need a newer kernel (switch the base to `trixie` in `auto/config`).
+- **Network:** NetworkManager is enabled. For Wi-Fi without a keyboard,
+  pre-seed a connection or use Ethernet for first boot.

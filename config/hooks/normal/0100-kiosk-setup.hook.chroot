@@ -1,0 +1,37 @@
+#!/bin/sh
+# Runs inside the image chroot during build: create the kiosk user,
+# wire up autologin, audio groups, and make the kiosk scripts executable.
+set -e
+
+KIOSK_USER="kiosk"
+
+# Create the unprivileged kiosk user (home already populated via includes.chroot).
+if ! id "${KIOSK_USER}" >/dev/null 2>&1; then
+	useradd --create-home --shell /bin/bash "${KIOSK_USER}"
+fi
+
+# Passwordless login + access to audio/video/input devices.
+passwd -d "${KIOSK_USER}" || true
+for grp in audio video input render plugdev netdev; do
+	getent group "${grp}" >/dev/null 2>&1 && usermod -aG "${grp}" "${KIOSK_USER}" || true
+done
+
+# Let the kiosk user reboot/poweroff without a password (handy for kiosks).
+echo "${KIOSK_USER} ALL=(ALL) NOPASSWD: /sbin/reboot, /sbin/poweroff, /sbin/shutdown" \
+	> /etc/sudoers.d/kiosk
+chmod 0440 /etc/sudoers.d/kiosk
+
+# Make sure the home dotfiles and scripts have correct ownership/permissions.
+chown -R "${KIOSK_USER}:${KIOSK_USER}" "/home/${KIOSK_USER}"
+chmod +x "/home/${KIOSK_USER}/.xinitrc" || true
+chmod +x /opt/kiosk/start-kiosk.sh
+
+# Enable NetworkManager so the kiosk gets online automatically.
+systemctl enable NetworkManager.service || true
+
+# Boot to a console (our autologin + startx takes over from there), not a DE.
+systemctl set-default multi-user.target || true
+
+# Enable user lingering so PipeWire's runtime dir is available.
+mkdir -p "/var/lib/systemd/linger"
+touch "/var/lib/systemd/linger/${KIOSK_USER}"
