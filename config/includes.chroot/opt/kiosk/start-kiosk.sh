@@ -31,6 +31,9 @@ unclutter -idle 0.5 -root >/dev/null 2>&1 &
 # Minimal window manager so Chromium gets a usable, fullscreen window.
 openbox >/dev/null 2>&1 &
 
+# Global power hotkeys: Ctrl+Alt+End = poweroff, Ctrl+Alt+Home = reboot.
+xbindkeys >/dev/null 2>&1 &
+
 # --- Welcome screen: show the IT-Schmiede splash while things warm up ---
 WELCOME_IMG="/opt/kiosk/welcome.png"
 if [ -r "$WELCOME_IMG" ]; then

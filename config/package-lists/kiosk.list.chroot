@@ -27,6 +27,9 @@ plymouth
 plymouth-themes
 feh
 
+# Global hotkeys for power off / reboot
+xbindkeys
+
 # Quality-of-life
 unclutter
 fonts-liberation

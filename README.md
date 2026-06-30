@@ -186,6 +186,17 @@ it automatically.
   image installs `xserver-xorg-video-all` and common non-free firmware, but very
   new GPUs may need a newer kernel.
 
+## Powering off / rebooting the kiosk
+
+There's no desktop, so use one of these:
+
+- **Keyboard shortcuts** (built in): **Ctrl+Alt+End** = power off,
+  **Ctrl+Alt+Home** = reboot, **Ctrl+Alt+R** = restart just the browser.
+- **Physical power button:** a short press triggers a clean ACPI shutdown.
+- **In VirtualBox:** menu **Machine → ACPI Shutdown** powers it off cleanly.
+- **Text console:** press **Ctrl+Alt+F2**, log in as `kiosk` (no password), and
+  run `sudo poweroff` (or `cat ~/kiosk.log` to debug the browser).
+
 ## Resource requirements
 
 This is a live OS that runs largely from RAM, and Chromium + YouTube are the

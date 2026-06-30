@@ -1,0 +1,14 @@
+# Kiosk power controls (handled by xbindkeys, started from start-kiosk.sh).
+# The kiosk user has passwordless sudo for poweroff/reboot (see sudoers.d/kiosk).
+
+# Power off the machine
+"sudo /sbin/poweroff"
+  control+alt+End
+
+# Reboot the machine
+"sudo /sbin/reboot"
+  control+alt+Home
+
+# Restart just the browser (handy if a page misbehaves)
+"pkill -TERM chromium"
+  control+alt+r
