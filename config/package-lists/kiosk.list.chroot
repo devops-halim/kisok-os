@@ -6,7 +6,11 @@ xserver-xorg-legacy
 xserver-xorg-video-all
 xserver-xorg-input-all
 xinit
+x11-xserver-utils
 openbox
+
+# Mesa software rendering fallback (black-screen fix in VMs without 3D)
+libgl1-mesa-dri
 
 # The browser
 chromium

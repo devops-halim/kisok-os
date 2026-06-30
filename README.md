@@ -157,9 +157,34 @@ it automatically.
 - **No sound / no mic:** confirm the device isn't muted in firmware, and that
   `firmware-*` packages cover your audio chip. `start-kiosk.sh` unmutes and
   raises the default Master/Capture levels on boot.
-- **Black screen:** usually a GPU driver/firmware gap — the image installs
-  `xserver-xorg-video-all` and common non-free firmware, but very new GPUs may
-  need a newer kernel (switch the base to `trixie` in `auto/config`).
+- **Welcome screen shows, then a black screen and the browser never appears:**
+  this is almost always Chromium's GPU backend rendering a black window — very
+  common in **VirtualBox/QEMU**. The kiosk now auto-detects a VM and disables
+  the GPU. If you still see it, set `KIOSK_DISABLE_GPU="yes"` in
+  `/etc/kiosk/kiosk.conf` (or in `config/includes.chroot/etc/kiosk/kiosk.conf`
+  before building). In VirtualBox, also **disable "3D Acceleration"**
+  (Settings → Display). A diagnostic log is written to `/home/kiosk/kiosk.log`
+  — switch to a console with **Ctrl+Alt+F2** and run `cat /home/kiosk/kiosk.log`
+  to see why Chromium exited.
+- **Black screen on real hardware:** usually a GPU driver/firmware gap — the
+  image installs `xserver-xorg-video-all` and common non-free firmware, but very
+  new GPUs may need a newer kernel.
+
+## Resource requirements
+
+This is a live OS that runs largely from RAM, and Chromium + YouTube are the
+heavy part:
+
+| Resource | Minimum            | Recommended         |
+|----------|--------------------|---------------------|
+| RAM      | 2 GB               | 4 GB                |
+| CPU      | 2 cores            | 2–4 cores           |
+| Storage  | none (runs from USB/ISO) | USB stick 4 GB+ |
+| GPU      | none (software rendering) | any with Linux drivers, for smooth 1080p/4K |
+
+With less than ~2 GB RAM, Chromium can run out of memory while loading YouTube
+and show a black screen. In a VM, give it **2 vCPUs and 4096 MB RAM**, enable
+**Audio**, and leave **3D acceleration off**.
 - **Network:** NetworkManager is enabled. For Wi-Fi without a keyboard,
   pre-seed a connection or use Ethernet for first boot.
 - **Security archive disabled at build time:** `auto/config` sets
