@@ -1,0 +1,27 @@
+[Unit]
+Description=IT-Schmiede Kiosk session (X + Chromium)
+# Start once the system is up and Plymouth has released the display.
+After=systemd-user-sessions.service plymouth-quit-wait.service getty@tty1.service
+# We own tty1 instead of a console login.
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=kiosk
+# Open a PAM (login) session so logind sets up XDG_RUNTIME_DIR, audio, etc.
+PAMName=login
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+Environment=HOME=/home/kiosk
+# Start X directly and run the kiosk script as the X client. No .xinitrc,
+# no console login involved. Xwrapper.config allows the kiosk user to start X.
+ExecStart=/usr/bin/xinit /opt/kiosk/start-kiosk.sh -- :0 vt1 -nolisten tcp
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

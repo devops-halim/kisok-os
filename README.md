@@ -77,8 +77,10 @@ sudo dd if=kisok-os-amd64.hybrid.iso of=/dev/sdX bs=4M status=progress oflag=syn
 
 (Or use [balenaEtcher](https://etcher.balena.io/) / Rufus on other machines.)
 
-Then boot the target PC from that USB stick (enable USB boot / disable Secure
-Boot in BIOS if needed).
+Then boot the target PC from that USB stick. The ISO boots on **both UEFI and
+legacy BIOS** machines (it ships syslinux for BIOS and grub-efi for UEFI), so
+you should not need to enable CSM/Legacy mode. Disable **Secure Boot** if the
+machine refuses to boot it.
 
 ---
 
@@ -153,18 +155,21 @@ Change how long the welcome screen stays up via `WELCOME_SECONDS` in
 
 ## How the auto-start chain works
 
+There is **no console login** — a systemd service owns tty1 and launches the
+graphical kiosk directly:
+
 ```
 systemd (multi-user.target)
-  └─ getty@tty1  ──autologin──▶  user "kiosk"
-        └─ ~/.bash_profile  ──▶  startx
-              └─ ~/.xinitrc  ──▶  /opt/kiosk/start-kiosk.sh
-                    ├─ openbox (window manager)
-                    ├─ pipewire / pipewire-pulse / wireplumber (audio)
-                    └─ chromium --kiosk  https://www.youtube.com
+  └─ kiosk.service        (User=kiosk, owns tty1, Restart=always)
+        └─ xinit /opt/kiosk/start-kiosk.sh
+              ├─ openbox (window manager)
+              ├─ xbindkeys (power hotkeys)
+              ├─ pipewire / pipewire-pulse / wireplumber (audio)
+              └─ chromium --kiosk  https://www.youtube.com
 ```
 
-If Chromium ever crashes or is closed, the loop in `start-kiosk.sh` relaunches
-it automatically.
+`kiosk.service` has `Restart=always`, and `start-kiosk.sh` also relaunches
+Chromium in a loop — so a crash anywhere brings the browser right back.
 
 ---
 

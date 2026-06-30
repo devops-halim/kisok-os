@@ -23,14 +23,16 @@ chmod 0440 /etc/sudoers.d/kiosk
 
 # Make sure the home dotfiles and scripts have correct ownership/permissions.
 chown -R "${KIOSK_USER}:${KIOSK_USER}" "/home/${KIOSK_USER}"
-chmod +x "/home/${KIOSK_USER}/.xinitrc" || true
 chmod +x /opt/kiosk/start-kiosk.sh
 
 # Enable NetworkManager so the kiosk gets online automatically.
 systemctl enable NetworkManager.service || true
 
-# Boot to a console (our autologin + startx takes over from there), not a DE.
+# Start straight into the kiosk session (X + Chromium) with no console login.
 systemctl set-default multi-user.target || true
+systemctl enable kiosk.service || true
+# Make sure no console login competes for tty1.
+systemctl disable getty@tty1.service || true
 
 # Enable user lingering so PipeWire's runtime dir is available.
 mkdir -p "/var/lib/systemd/linger"
