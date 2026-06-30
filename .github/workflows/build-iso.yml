@@ -12,10 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install live-build
+      - name: Install live-build and Debian bootstrap tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y live-build
+          sudo apt-get install -y live-build debootstrap debian-archive-keyring
 
       - name: Build ISO
         run: sudo ./build.sh

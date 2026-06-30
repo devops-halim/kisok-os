@@ -18,6 +18,9 @@ fi
 
 cd "$(dirname "$0")"
 
+echo ">> Cleaning previous build state (keeps package cache)..."
+lb clean || true
+
 echo ">> Configuring image (lb config)..."
 lb config
 
