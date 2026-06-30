@@ -44,6 +44,11 @@ This repo includes `.github/workflows/build-iso.yml`. On every push (or via
 **Actions → Build kisok-os ISO → Run workflow**) it builds the image and
 uploads `kisok-os-amd64` as a downloadable artifact.
 
+The workflow runs inside a **`debian:bookworm` container** (privileged) so it
+uses Debian's own `live-build`, which understands the modern Debian archive
+layout. (The `live-build` packaged on Ubuntu runners is too old and looks for
+Debian indexes at Ubuntu-style paths, which 404.)
+
 ### Option B — locally on a Debian/Ubuntu host
 
 ```bash
@@ -157,10 +162,10 @@ it automatically.
   need a newer kernel (switch the base to `trixie` in `auto/config`).
 - **Network:** NetworkManager is enabled. For Wi-Fi without a keyboard,
   pre-seed a connection or use Ethernet for first boot.
-- **Security archive disabled at build time:** the `live-build` shipped on the
-  Ubuntu CI runner writes the obsolete Debian security path (`bookworm/updates`
-  instead of `bookworm-security`), which 404s. We therefore build with
-  `--security false` (the working `bookworm-updates` archive stays enabled).
-  Because the live image is read-only and resets on every boot, this is a safe
-  tradeoff. To pull security-patched packages at build time, build on a Debian
-  host with a current `live-build` and set `--security true` in `auto/config`.
+- **Security archive disabled at build time:** `auto/config` sets
+  `--security false`, so the build uses `main` + `bookworm-updates` only. This
+  keeps the build simple and avoided a bug in older `live-build`. Because the
+  live image is read-only and resets on every boot, it's a safe tradeoff. Now
+  that CI builds inside a Debian container with a current `live-build`, you can
+  set `--security true` in `auto/config` if you want security-patched packages
+  baked in at build time.

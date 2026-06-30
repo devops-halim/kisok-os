@@ -8,17 +8,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Build inside a real Debian container so we use Debian's own live-build,
+    # which understands the modern Debian archive layout (security suite name,
+    # per-component Contents files, etc.). Privileged is needed for the mounts
+    # (proc/sys/devpts) live-build performs while assembling the image.
+    container:
+      image: debian:bookworm
+      options: --privileged
     steps:
+      - name: Install git (needed before checkout) and CA certs
+        run: |
+          apt-get update
+          apt-get install -y git ca-certificates
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install live-build and Debian bootstrap tools
+      - name: Install live-build and image tooling
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build debootstrap debian-archive-keyring
+          apt-get install -y \
+            live-build debootstrap \
+            xorriso isolinux syslinux-common syslinux-utils \
+            squashfs-tools mtools dosfstools
 
       - name: Build ISO
-        run: sudo ./build.sh
+        run: ./build.sh
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
