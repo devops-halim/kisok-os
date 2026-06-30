@@ -35,3 +35,11 @@ systemctl set-default multi-user.target || true
 # Enable user lingering so PipeWire's runtime dir is available.
 mkdir -p "/var/lib/systemd/linger"
 touch "/var/lib/systemd/linger/${KIOSK_USER}"
+
+# --- Boot splash: activate the IT-Schmiede Plymouth theme ---
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+	# -R rebuilds the initramfs so the theme is shown at power-on.
+	plymouth-set-default-theme -R kisok || plymouth-set-default-theme kisok || true
+else
+	update-initramfs -u || true
+fi

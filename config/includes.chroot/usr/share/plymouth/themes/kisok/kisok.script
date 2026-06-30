@@ -1,0 +1,26 @@
+// IT-Schmiede OS boot splash: show the welcome image fullscreen.
+
+// Dark background matching the splash image.
+Window.SetBackgroundTopColor(0.039, 0.047, 0.063);
+Window.SetBackgroundBottomColor(0.039, 0.047, 0.063);
+
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+splash.image = Image("splash.png");
+scaled = splash.image.Scale(screen_width, screen_height);
+splash.sprite = Sprite(scaled);
+splash.sprite.SetX(0);
+splash.sprite.SetY(0);
+splash.sprite.SetZ(-10);
+
+// Show any boot messages / password prompts on top, if needed.
+message_sprite = Sprite();
+message_sprite.SetPosition(screen_width * 0.5, screen_height * 0.92, 10000);
+
+fun message_callback(text) {
+    my_image = Image.Text(text, 1, 1, 1);
+    message_sprite.SetImage(my_image);
+    message_sprite.SetX(screen_width / 2 - my_image.GetWidth() / 2);
+}
+Plymouth.SetMessageFunction(message_callback);

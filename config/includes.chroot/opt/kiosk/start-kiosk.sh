@@ -20,6 +20,15 @@ unclutter -idle 0.5 -root &
 # Minimal window manager so Chromium gets a usable, fullscreen window.
 openbox &
 
+# --- Welcome screen: show the IT-Schmiede splash while things warm up ---
+WELCOME_IMG="/opt/kiosk/welcome.png"
+WELCOME_SECONDS=4
+if [ -r "$WELCOME_IMG" ]; then
+	feh --fullscreen --auto-zoom --hide-pointer --no-menus \
+		--image-bg "#ffffff" "$WELCOME_IMG" &
+	WELCOME_PID=$!
+fi
+
 # --- Audio: bring up the PipeWire stack for speaker + microphone ---
 # (In a bare autologin session there is no desktop to start these for us.)
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -34,6 +43,12 @@ amixer -q set Master unmute        >/dev/null 2>&1 || true
 amixer -q set Master 90%           >/dev/null 2>&1 || true
 amixer -q set Capture cap          >/dev/null 2>&1 || true
 amixer -q set Capture 80%          >/dev/null 2>&1 || true
+
+# Keep the welcome screen up for a few seconds, then dismiss it.
+if [ -n "${WELCOME_PID:-}" ]; then
+	sleep "$WELCOME_SECONDS"
+	kill "$WELCOME_PID" >/dev/null 2>&1 || true
+fi
 
 # Chromium profile lives on the writable overlay so settings persist
 # within a session (the live image itself stays read-only).

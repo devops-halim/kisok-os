@@ -18,6 +18,11 @@ pipewire-alsa
 wireplumber
 alsa-utils
 
+# Boot splash / welcome screen
+plymouth
+plymouth-themes
+feh
+
 # Quality-of-life
 unclutter
 fonts-liberation
