@@ -157,3 +157,10 @@ it automatically.
   need a newer kernel (switch the base to `trixie` in `auto/config`).
 - **Network:** NetworkManager is enabled. For Wi-Fi without a keyboard,
   pre-seed a connection or use Ethernet for first boot.
+- **Security archive disabled at build time:** the `live-build` shipped on the
+  Ubuntu CI runner writes the obsolete Debian security path (`bookworm/updates`
+  instead of `bookworm-security`), which 404s. We therefore build with
+  `--security false` (the working `bookworm-updates` archive stays enabled).
+  Because the live image is read-only and resets on every boot, this is a safe
+  tradeoff. To pull security-patched packages at build time, build on a Debian
+  host with a current `live-build` and set `--security true` in `auto/config`.
